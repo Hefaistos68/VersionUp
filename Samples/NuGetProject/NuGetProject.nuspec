@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>NuGetProject</id>
+    <version>1.0.0</version>
+    <authors>Hefaistos68</authors>
+    <description>Sample NuGet package for testing VersionUp</description>
+  </metadata>
+</package>

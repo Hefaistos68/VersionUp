@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <Extern href="stdidcmd.h"/>
+  <Extern href="vsshlids.h"/>
+
+  <Commands package="guidVersionUpPackage">
+    <Groups>
+      <Group guid="guidVersionUpPackageCmdSet" id="VersionUpGroup" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_PROJNODE"/>
+      </Group>
+      <Group guid="guidVersionUpPackageCmdSet" id="VersionUpSubMenuGroup" priority="0x0100">
+        <Parent guid="guidVersionUpPackageCmdSet" id="VersionUpSubMenu"/>
+      </Group>
+    </Groups>
+
+    <Menus>
+      <Menu guid="guidVersionUpPackageCmdSet" id="VersionUpSubMenu" priority="0x0100" type="Menu">
+        <Parent guid="guidVersionUpPackageCmdSet" id="VersionUpGroup"/>
+        <Strings>
+          <ButtonText>Increment Version</ButtonText>
+        </Strings>
+      </Menu>
+    </Menus>
+
+    <Buttons>
+      <Button guid="guidVersionUpPackageCmdSet" id="cmdidIncrementMajor" priority="0x0100" type="Button">
+        <Parent guid="guidVersionUpPackageCmdSet" id="VersionUpSubMenuGroup" />
+        <Strings>
+          <ButtonText>Major</ButtonText>
+          <LocCanonicalName>.VersionUp.IncrementVersion.Major</LocCanonicalName>
+        </Strings>
+      </Button>
+      <Button guid="guidVersionUpPackageCmdSet" id="cmdidIncrementMinor" priority="0x0200" type="Button">
+        <Parent guid="guidVersionUpPackageCmdSet" id="VersionUpSubMenuGroup" />
+        <Strings>
+          <ButtonText>Minor</ButtonText>
+          <LocCanonicalName>.VersionUp.IncrementVersion.Minor</LocCanonicalName>
+        </Strings>
+      </Button>
+      <Button guid="guidVersionUpPackageCmdSet" id="cmdidIncrementBuild" priority="0x0300" type="Button">
+        <Parent guid="guidVersionUpPackageCmdSet" id="VersionUpSubMenuGroup" />
+        <Strings>
+          <ButtonText>Build</ButtonText>
+          <LocCanonicalName>.VersionUp.IncrementVersion.Build</LocCanonicalName>
+        </Strings>
+      </Button>
+      <Button guid="guidVersionUpPackageCmdSet" id="cmdidIncrementPatch" priority="0x0400" type="Button">
+        <Parent guid="guidVersionUpPackageCmdSet" id="VersionUpSubMenuGroup" />
+        <Strings>
+          <ButtonText>Patch</ButtonText>
+          <LocCanonicalName>.VersionUp.IncrementVersion.Patch</LocCanonicalName>
+        </Strings>
+      </Button>
+    </Buttons>
+  </Commands>
+
+  <CommandPlacements>
+    <CommandPlacement guid="guidVersionUpPackageCmdSet" id="VersionUpGroup" priority="0x0600">
+      <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_ITEMNODE" />
+    </CommandPlacement>
+  </CommandPlacements>
+
+  <Symbols>
+    <GuidSymbol name="guidVersionUpPackage" value="{d3f962f7-a630-4c98-9b21-7b1a9908f87c}" />
+    <GuidSymbol name="guidVersionUpPackageCmdSet" value="{c3f962f7-a630-4c98-9b21-7b1a9908f87c}">
+      <IDSymbol name="VersionUpGroup" value="0x1020" />
+      <IDSymbol name="VersionUpSubMenu" value="0x1030" />
+      <IDSymbol name="VersionUpSubMenuGroup" value="0x1040" />
+      <IDSymbol name="cmdidIncrementMajor" value="0x0100" />
+      <IDSymbol name="cmdidIncrementMinor" value="0x0200" />
+      <IDSymbol name="cmdidIncrementBuild" value="0x0300" />
+      <IDSymbol name="cmdidIncrementPatch" value="0x0400" />
+    </GuidSymbol>
+  </Symbols>
+</CommandTable>

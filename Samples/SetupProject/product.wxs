@@ -1,0 +1,5 @@
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="SampleSetup" Language="1033" Version="3.0.0" Manufacturer="Hefaistos68" UpgradeCode="bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+  </Product>
+</Wix>

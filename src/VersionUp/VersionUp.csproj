@@ -1,0 +1,68 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+	<PropertyGroup>
+		<TargetFramework>net48</TargetFramework>
+		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UseCodeSharing>true</UseCodeSharing>
+
+		<!-- Assembly Metadata for GitHub & Marketplace -->
+		<AssemblyName>VersionUp</AssemblyName>
+		<RootNamespace>VersionUp</RootNamespace>
+		<Version>1.0.0</Version>
+		<Authors>Hefaistos68</Authors>
+		<Company>Hefaistos68</Company>
+		<Product>VersionUp</Product>
+		<Description>Increment project versions through a context menu in the Solution Explorer.</Description>
+		<Copyright>Copyright © Hefaistos68 2026</Copyright>
+		<RepositoryUrl>https://github.com/Hefaistos68/VersionUp</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageProjectUrl>https://github.com/Hefaistos68/VersionUp</PackageProjectUrl>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<VsixDeployOnDebug>true</VsixDeployOnDebug>
+		<UseWpf>true</UseWpf>
+		<UseWindowsForms>true</UseWindowsForms>
+		<IsVsixProject>true</IsVsixProject>
+		<VSSDKBuildToolsAutoSetup>true</VSSDKBuildToolsAutoSetup>
+		<CreateVsixContainer>true</CreateVsixContainer>
+		<GeneratePkgDefFile>true</GeneratePkgDefFile>
+		<DeployExtension Condition="'$(BuildingInsideVisualStudio)' == 'true'">true</DeployExtension>
+		<DeployExtension Condition="'$(BuildingInsideVisualStudio)' != 'true'">false</DeployExtension>
+		<UseCodebase>true</UseCodebase>
+		<IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<IncludeDebugSymbolsInVSIXContainer>true</IncludeDebugSymbolsInVSIXContainer>
+		<IncludeDebugSymbolsInLocalVSIXDeployment>true</IncludeDebugSymbolsInLocalVSIXDeployment>
+		<CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
+		<CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
+		<NeutralLanguage>en-US</NeutralLanguage>
+		<StartAction>Program</StartAction>
+		<StartProgram Condition="'$(DevEnvDir)' != ''">$(DevEnvDir)devenv.exe</StartProgram>
+		<StartArguments>/rootsuffix Exp /log</StartArguments>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectCapability Include="CreateVsixContainer" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="17.14.106" />
+		<PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.14.40265" ExcludeAssets="runtime" NoWarn="NU1608" />
+		<PackageReference Include="Microsoft.VSSDK.BuildTools" Version="18.5.40034" PrivateAssets="all" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<VSCTCompile Include="VersionUpPackage.vsct">
+			<ResourceName>Menus.ctmenu</ResourceName>
+			<SubType>Designer</SubType>
+		</VSCTCompile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="source.extension.vsixmanifest">
+			<SubType>Designer</SubType>
+		</None>
+	</ItemGroup>
+</Project>

@@ -1,0 +1,24 @@
+## Build Outputs
+[Db]in/
+[Oo]bj/
+[Rr]elease/
+[Dd]ebug/
+
+## Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.vsix
+
+## Test Results
+TestResults/
+*.trx
+
+## NuGet Packages
+packages/
+*.nuget.props
+*.nuget.targets
+project.assets.json
+project.nuget.cache

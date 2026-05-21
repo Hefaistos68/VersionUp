@@ -2,7 +2,7 @@
 
 **VersionUp** is a sleek, modern Visual Studio extension that allows developers to quickly and easily increment the version of C#/.NET projects directly from the Solution Explorer context menu.
 
-[![VersionUp](documentation/images/Screenshot1.png)](documentation/images/Screenshot1.png)
+[![VersionUp](documentation/images/status-bar-info.png)](documentation/images/status-bar-info.png)
 
 Designed for Visual Studio 2022 and 2026, it supports modern SDK-style projects and integrates seamlessly into your development workflow.
 

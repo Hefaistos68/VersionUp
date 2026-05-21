@@ -43,6 +43,11 @@ public sealed class VersionUpCommand
     /// </summary>
     public const int cmdidIncrementPatch = 0x0400;
 
+    /// <summary>
+    /// Command ID for Set Version.
+    /// </summary>
+    public const int cmdidSetVersion = 0x0500;
+
     /// <summary>The owner package that this command was registered with.</summary>
     private readonly AsyncPackage _package;
  
@@ -93,6 +98,17 @@ public sealed class VersionUpCommand
             AddMenuCommand(commandService, cmdidIncrementMinor, VersionSegment.Minor);
             AddMenuCommand(commandService, cmdidIncrementBuild, VersionSegment.Build);
             AddMenuCommand(commandService, cmdidIncrementPatch, VersionSegment.Revision);
+
+            // Register the Set Version command
+            CommandID setVersionCommandID = new CommandID(CommandSet, cmdidSetVersion);
+            OleMenuCommand setVersionMenuItem = new OleMenuCommand((s, e) =>
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+                ExecuteSetVersion();
+            }, setVersionCommandID);
+
+            setVersionMenuItem.BeforeQueryStatus += OnBeforeQueryStatus;
+            commandService.AddCommand(setVersionMenuItem);
         }
 
         Instance = new VersionUpCommand(package);
@@ -630,6 +646,123 @@ public sealed class VersionUpCommand
         catch (Exception ex)
         {
             OutputToWindow($"Failed to update version in {Path.GetFileName(filePath)}: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Executes the Set Version command, prompting the user with a dialog to modify the version.
+    /// </summary>
+    private static void ExecuteSetVersion()
+    {
+        ThreadHelper.ThrowIfNotOnUIThread();
+
+        if (Instance == null)
+        {
+            return;
+        }
+
+        string? selectedPath = GetSelectedPath();
+
+        if (string.IsNullOrEmpty(selectedPath))
+        {
+            VsShellUtilities.ShowMessageBox(
+                (Instance._package as IServiceProvider) ?? ServiceProvider.GlobalProvider,
+                "No active project or file selected in Solution Explorer.",
+                "VersionUp",
+                OLEMSGICON.OLEMSGICON_WARNING,
+                OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+
+            return;
+        }
+
+        IVersionFileHandler? handler = GetHandlerForFile(selectedPath!);
+
+        if (handler == null)
+        {
+            VsShellUtilities.ShowMessageBox(
+                (Instance._package as IServiceProvider) ?? ServiceProvider.GlobalProvider,
+                "Unsupported file type for version setup.",
+                "VersionUp",
+                OLEMSGICON.OLEMSGICON_WARNING,
+                OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+
+            return;
+        }
+
+        try
+        {
+            IVsTextLines? buffer = GetTextBufferForFile(selectedPath!);
+
+            if (buffer == null)
+            {
+                VsShellUtilities.ShowMessageBox(
+                    (Instance._package as IServiceProvider) ?? ServiceProvider.GlobalProvider,
+                    $"Failed to open '{Path.GetFileName(selectedPath)}' in Visual Studio.",
+                    "VersionUp",
+                    OLEMSGICON.OLEMSGICON_CRITICAL,
+                    OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                    OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+
+                return;
+            }
+
+            string fileContent = GetTextFromBuffer(buffer);
+            string? currentVersion = handler.GetVersion(fileContent);
+
+            if (string.IsNullOrEmpty(currentVersion))
+            {
+                currentVersion = "1.0.0";
+            }
+
+            SetVersionDialog dialog = new(currentVersion!);
+
+            bool? dialogResult = dialog.ShowModal();
+
+            if (dialogResult == true)
+            {
+                string newVersion = dialog.VersionResult;
+                string updatedContent = handler.UpdateVersion(fileContent, newVersion);
+                IVsLinkedUndoTransactionManager? undoManager =
+                    ServiceProvider.GlobalProvider.GetService(typeof(SVsLinkedUndoTransactionManager)) as IVsLinkedUndoTransactionManager;
+                bool undoOpened = false;
+
+                if (undoManager != null)
+                {
+                    int hr = undoManager.OpenLinkedUndo(
+                        (uint)LinkedTransactionFlags2.mdtGlobal,
+                        "Set Project Version");
+
+                    undoOpened = hr == VSConstants.S_OK;
+                }
+
+                try
+                {
+                    ReplaceTextInBuffer(buffer, updatedContent);
+                }
+                finally
+                {
+                    if (undoOpened && undoManager != null)
+                    {
+                        undoManager.CloseLinkedUndo();
+                    }
+                }
+
+                string successMessage = $"Successfully set version in {Path.GetFileName(selectedPath)} to {newVersion}!";
+                OutputToWindow(successMessage);
+                SetStatusBarText(successMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            VsShellUtilities.ShowMessageBox(
+                (Instance._package as IServiceProvider) ?? ServiceProvider.GlobalProvider,
+                $"Failed to set version: {ex.Message}",
+                "VersionUp",
+                OLEMSGICON.OLEMSGICON_CRITICAL,
+                OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
         }
     }
 

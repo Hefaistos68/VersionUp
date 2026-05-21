@@ -53,4 +53,20 @@ public class CsprojVersionHandlerTests
 
         result.ShouldContain("<Version>2.0.0</Version>");
     }
+
+    /// <summary>
+    /// Verifies that UpdateVersion inserts a new version element when no version element exists.
+    /// </summary>
+    [Test]
+    public void UpdateVersion_WithNoExistingVersion_ShouldInsertVersionElement()
+    {
+        CsprojVersionHandler handler = new CsprojVersionHandler();
+
+        string xml = "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><Nullable>enable</Nullable></PropertyGroup></Project>";
+
+        string result = handler.UpdateVersion(xml, "1.0.0");
+
+        result.ShouldContain("<Version>1.0.0</Version>");
+    }
 }
+

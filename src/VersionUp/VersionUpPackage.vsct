@@ -11,6 +11,9 @@
       <Group guid="guidVersionUpPackageCmdSet" id="VersionUpSubMenuGroup" priority="0x0100">
         <Parent guid="guidVersionUpPackageCmdSet" id="VersionUpSubMenu"/>
       </Group>
+      <Group guid="guidVersionUpPackageCmdSet" id="VersionUpSetVersionGroup" priority="0x0200">
+        <Parent guid="guidVersionUpPackageCmdSet" id="VersionUpSubMenu"/>
+      </Group>
     </Groups>
 
     <Menus>
@@ -51,6 +54,13 @@
           <LocCanonicalName>.VersionUp.IncrementVersion.Patch</LocCanonicalName>
         </Strings>
       </Button>
+      <Button guid="guidVersionUpPackageCmdSet" id="cmdidSetVersion" priority="0x0100" type="Button">
+        <Parent guid="guidVersionUpPackageCmdSet" id="VersionUpSetVersionGroup" />
+        <Strings>
+          <ButtonText>Set Version...</ButtonText>
+          <LocCanonicalName>.VersionUp.SetVersion</LocCanonicalName>
+        </Strings>
+      </Button>
     </Buttons>
   </Commands>
 
@@ -66,10 +76,12 @@
       <IDSymbol name="VersionUpGroup" value="0x1020" />
       <IDSymbol name="VersionUpSubMenu" value="0x1030" />
       <IDSymbol name="VersionUpSubMenuGroup" value="0x1040" />
+      <IDSymbol name="VersionUpSetVersionGroup" value="0x1050" />
       <IDSymbol name="cmdidIncrementMajor" value="0x0100" />
       <IDSymbol name="cmdidIncrementMinor" value="0x0200" />
       <IDSymbol name="cmdidIncrementBuild" value="0x0300" />
       <IDSymbol name="cmdidIncrementPatch" value="0x0400" />
+      <IDSymbol name="cmdidSetVersion" value="0x0500" />
     </GuidSymbol>
   </Symbols>
 </CommandTable>

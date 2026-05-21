@@ -348,6 +348,55 @@ public sealed class VersionStatusBarControl : Border, IDisposable
                 grid.Children.Add(nameBlock);
                 grid.Children.Add(versionBlock);
 
+                if (string.IsNullOrEmpty(diagnostics.PrimaryVersion))
+                {
+                    string projectPath = proj.FullName;
+
+                    if (!string.IsNullOrEmpty(projectPath) && File.Exists(projectPath))
+                    {
+                        IVersionFileHandler? handler = VersionUpCommand.GetHandlerForFile(projectPath);
+
+                        if (handler != null)
+                        {
+                            Button addVersionButton = new()
+                            {
+                                Content = "Add",
+                                Margin = new Thickness(8, 1, 0, 1),
+                                Padding = new Thickness(6, 0, 6, 0),
+                                Cursor = Cursors.Hand,
+                                Height = 18,
+                                FontSize = 10,
+                                VerticalAlignment = VerticalAlignment.Center,
+                                VerticalContentAlignment = VerticalAlignment.Center,
+                                HorizontalContentAlignment = HorizontalAlignment.Center
+                            };
+
+                            addVersionButton.SetResourceReference(Button.BackgroundProperty, VsBrushes.ToolWindowBackgroundKey);
+                            addVersionButton.SetResourceReference(Button.ForegroundProperty, VsBrushes.ToolWindowTextKey);
+                            addVersionButton.SetResourceReference(Button.BorderBrushProperty, VsBrushes.ToolWindowBorderKey);
+
+                            string initialVersion = GetInitialVersion(projectPath);
+
+                            addVersionButton.Click += (s, ev) =>
+                            {
+                                ThreadHelper.ThrowIfNotOnUIThread();
+                                VersionUpCommand.AlignProjectVersions(proj, initialVersion);
+
+                                if (_popup != null)
+                                {
+                                    _popup.IsOpen = false;
+                                }
+
+                                UpdateState();
+                            };
+
+                            Grid.SetRow(addVersionButton, rowIndex);
+                            Grid.SetColumn(addVersionButton, 4);
+                            grid.Children.Add(addVersionButton);
+                        }
+                    }
+                }
+
                 if (diagnostics.IsOutOfSync)
                 {
                     CrispImage warningIcon = new()
@@ -457,6 +506,29 @@ public sealed class VersionStatusBarControl : Border, IDisposable
 
         border.Child = mainStack;
         _popup.Child = border;
+    }
+
+    /// <summary>
+    /// Determines the appropriate initial version string for a project file based on its file extension or name.
+    /// </summary>
+    /// <param name="filePath">The absolute path to the project file.</param>
+    /// <returns>The initial version string, typically "1.0.0" or "1.0.0.0".</returns>
+    private static string GetInitialVersion(string filePath)
+    {
+        if (string.IsNullOrEmpty(filePath))
+        {
+            return "1.0.0";
+        }
+
+        string ext = Path.GetExtension(filePath).ToLowerInvariant();
+        string fileName = Path.GetFileName(filePath).ToLowerInvariant();
+
+        if (fileName == "package.appxmanifest" || ext == ".rc")
+        {
+            return "1.0.0.0";
+        }
+
+        return "1.0.0";
     }
 
     private static ImageMoniker GetMonikerForProject(Project proj)

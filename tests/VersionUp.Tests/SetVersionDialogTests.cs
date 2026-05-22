@@ -1,106 +1,107 @@
-namespace VersionUp.Tests;
-
-using System;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Threading;
-using Moq;
-using NUnit.Framework;
-using Shouldly;
-using VersionUp;
-using Microsoft.VisualStudio.Shell.Interop;
-
-/// <summary>
-/// Unit tests for the <see cref="SetVersionDialog"/> class.
-/// </summary>
-[TestFixture]
-[Apartment(ApartmentState.STA)]
-public class SetVersionDialogTests
+namespace VersionUp.Tests
 {
-    /// <summary>
-    /// Set up a mock Visual Studio environment for the dialog window.
-    /// </summary>
-    [OneTimeSetUp]
-    public void OneTimeSetUp()
-    {
-        var mockSettingsStore = new Mock<IVsSettingsStore>();
-        var mockSettingsManager = new Mock<IVsSettingsManager>();
+	using System;
+	using System.Reflection;
+	using System.Runtime.InteropServices;
+	using System.Threading;
+	using Moq;
+	using NUnit.Framework;
+	using Shouldly;
+	using Microsoft.VisualStudio.Shell.Interop;
+	using VersionUp.Dialogs;
 
-        IVsSettingsStore outStore = mockSettingsStore.Object;
+	/// <summary>
+	/// Unit tests for the <see cref="SetVersionDialog"/> class.
+	/// </summary>
+	[TestFixture]
+	[Apartment(ApartmentState.STA)]
+	public class SetVersionDialogTests
+	{
+	    /// <summary>
+	    /// Set up a mock Visual Studio environment for the dialog window.
+	    /// </summary>
+	    [OneTimeSetUp]
+	    public void OneTimeSetUp()
+	    {
+	        var mockSettingsStore = new Mock<IVsSettingsStore>();
+	        var mockSettingsManager = new Mock<IVsSettingsManager>();
 
-        mockSettingsManager
-            .Setup(m => m.GetReadOnlySettingsStore(It.IsAny<uint>(), out outStore))
-            .Returns(0);
+	        IVsSettingsStore outStore = mockSettingsStore.Object;
 
-        MockServiceProvider mockServiceProvider = new MockServiceProvider(mockSettingsManager.Object);
-        Microsoft.VisualStudio.Shell.ServiceProvider serviceProvider = new Microsoft.VisualStudio.Shell.ServiceProvider(mockServiceProvider);
+	        mockSettingsManager
+	            .Setup(m => m.GetReadOnlySettingsStore(It.IsAny<uint>(), out outStore))
+	            .Returns(0);
 
-        try
-        {
-            var field = typeof(Microsoft.VisualStudio.Shell.ServiceProvider).GetField("globalProvider", BindingFlags.Static | BindingFlags.NonPublic);
+	        MockServiceProvider mockServiceProvider = new MockServiceProvider(mockSettingsManager.Object);
+	        Microsoft.VisualStudio.Shell.ServiceProvider serviceProvider = new Microsoft.VisualStudio.Shell.ServiceProvider(mockServiceProvider);
 
-            if (field != null)
-            {
-                field.SetValue(null, serviceProvider);
-            }
-        }
-        catch
-        {
-            // Ignore if reflection fails
-        }
-    }
+	        try
+	        {
+	            var field = typeof(Microsoft.VisualStudio.Shell.ServiceProvider).GetField("globalProvider", BindingFlags.Static | BindingFlags.NonPublic);
 
-    /// <summary>
-    /// Verifies that the dialog initializes correctly with the provided version.
-    /// </summary>
-    [Test]
-    public void Constructor_ShouldInitializeWithCurrentVersion()
-    {
-        string currentVersion = "1.2.3.4";
+	            if (field != null)
+	            {
+	                field.SetValue(null, serviceProvider);
+	            }
+	        }
+	        catch
+	        {
+	            // Ignore if reflection fails
+	        }
+	    }
 
-        SetVersionDialog dialog = new SetVersionDialog(currentVersion);
+	    /// <summary>
+	    /// Verifies that the dialog initializes correctly with the provided version.
+	    /// </summary>
+	    [Test]
+	    public void Constructor_ShouldInitializeWithCurrentVersion()
+	    {
+	        string currentVersion = "1.2.3.4";
 
-        dialog.VersionResult.ShouldBe(currentVersion);
-    }
+	        SetVersionDialog dialog = new SetVersionDialog(currentVersion);
 
-    /// <summary>
-    /// Verifies that the dialog initializes with an empty string when the provided version is null.
-    /// </summary>
-    [Test]
-    public void Constructor_ShouldInitializeWithEmptyString_WhenCurrentVersionIsNull()
-    {
-        SetVersionDialog dialog = new SetVersionDialog(null!);
+	        dialog.VersionResult.ShouldBe(currentVersion);
+	    }
 
-        dialog.VersionResult.ShouldBe(string.Empty);
-    }
+	    /// <summary>
+	    /// Verifies that the dialog initializes with an empty string when the provided version is null.
+	    /// </summary>
+	    [Test]
+	    public void Constructor_ShouldInitializeWithEmptyString_WhenCurrentVersionIsNull()
+	    {
+	        SetVersionDialog dialog = new SetVersionDialog(null!);
 
-    /// <summary>
-    /// Custom mock service provider implementing OLE IServiceProvider.
-    /// </summary>
-    private class MockServiceProvider : Microsoft.VisualStudio.OLE.Interop.IServiceProvider
-    {
-        private readonly object _settingsManager;
+	        dialog.VersionResult.ShouldBe(string.Empty);
+	    }
 
-        public MockServiceProvider(object settingsManager)
-        {
-            _settingsManager = settingsManager;
-        }
+	    /// <summary>
+	    /// Custom mock service provider implementing OLE IServiceProvider.
+	    /// </summary>
+	    private class MockServiceProvider : Microsoft.VisualStudio.OLE.Interop.IServiceProvider
+	    {
+	        private readonly object _settingsManager;
 
-        public int QueryService(ref Guid guidService, ref Guid riid, out IntPtr ppvObject)
-        {
-            ppvObject = IntPtr.Zero;
+	        public MockServiceProvider(object settingsManager)
+	        {
+	            _settingsManager = settingsManager;
+	        }
 
-            if (guidService == typeof(SVsSettingsManager).GUID)
-            {
-                IntPtr unknown = Marshal.GetIUnknownForObject(_settingsManager);
-                int hr = Marshal.QueryInterface(unknown, ref riid, out ppvObject);
+	        public int QueryService(ref Guid guidService, ref Guid riid, out IntPtr ppvObject)
+	        {
+	            ppvObject = IntPtr.Zero;
 
-                Marshal.Release(unknown);
+	            if (guidService == typeof(SVsSettingsManager).GUID)
+	            {
+	                IntPtr unknown = Marshal.GetIUnknownForObject(_settingsManager);
+	                int hr = Marshal.QueryInterface(unknown, ref riid, out ppvObject);
 
-                return hr;
-            }
+	                Marshal.Release(unknown);
 
-            return -2147467262; // E_NOINTERFACE
-        }
-    }
+	                return hr;
+	            }
+
+	            return -2147467262; // E_NOINTERFACE
+	        }
+	    }
+	}
 }

@@ -1,84 +1,85 @@
-namespace VersionUp;
-
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using Microsoft.VisualStudio.Shell;
-
-/// <summary>
-/// Injects custom WPF content into the Visual Studio status bar.
-/// </summary>
-internal static class StatusBarInjector
+namespace VersionUp
 {
-    private const string StatusBarPanelName = "StatusBarPanel";
-    private const int StatusBarRetryDelayMilliseconds = 5000;
+	using System.Threading.Tasks;
+	using System.Windows;
+	using System.Windows.Controls;
+	using System.Windows.Media;
+	using Microsoft.VisualStudio.Shell;
 
-    private static DockPanel? panel;
+	/// <summary>
+	/// Injects custom WPF content into the Visual Studio status bar.
+	/// </summary>
+	internal static class StatusBarInjector
+	{
+	    private const string StatusBarPanelName = "StatusBarPanel";
+	    private const int StatusBarRetryDelayMilliseconds = 5000;
 
-    /// <summary>
-    /// Injects the specified control into the status bar.
-    /// </summary>
-    /// <param name="element">The control to inject.</param>
-    /// <returns>A task that completes when the control is injected.</returns>
-    public static async Task InjectControlAsync(FrameworkElement element)
-    {
-        if (element == null)
-        {
-            return;
-        }
+	    private static DockPanel? panel;
 
-        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-        await EnsureUiAsync();
+	    /// <summary>
+	    /// Injects the specified control into the status bar.
+	    /// </summary>
+	    /// <param name="element">The control to inject.</param>
+	    /// <returns>A task that completes when the control is injected.</returns>
+	    public static async Task InjectControlAsync(FrameworkElement element)
+	    {
+	        if (element == null)
+	        {
+	            return;
+	        }
 
-        if (panel == null)
-        {
-            return;
-        }
+	        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+	        await EnsureUiAsync();
 
-        element.SetValue(DockPanel.DockProperty, Dock.Right);
-        panel.Children.Add(element);
-    }
+	        if (panel == null)
+	        {
+	            return;
+	        }
 
-    private static async Task EnsureUiAsync()
-    {
-        while (panel == null)
-        {
-            panel = FindChild(Application.Current?.MainWindow, StatusBarPanelName) as DockPanel;
+	        element.SetValue(DockPanel.DockProperty, Dock.Right);
+	        panel.Children.Add(element);
+	    }
 
-            if (panel == null)
-            {
-                await Task.Delay(StatusBarRetryDelayMilliseconds);
-            }
-        }
-    }
+	    private static async Task EnsureUiAsync()
+	    {
+	        while (panel == null)
+	        {
+	            panel = FindChild(Application.Current?.MainWindow, StatusBarPanelName) as DockPanel;
 
-    private static DependencyObject? FindChild(DependencyObject? parent, string childName)
-    {
-        if (parent == null)
-        {
-            return null;
-        }
+	            if (panel == null)
+	            {
+	                await Task.Delay(StatusBarRetryDelayMilliseconds);
+	            }
+	        }
+	    }
 
-        int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
+	    private static DependencyObject? FindChild(DependencyObject? parent, string childName)
+	    {
+	        if (parent == null)
+	        {
+	            return null;
+	        }
 
-        for (int i = 0; i < childrenCount; i++)
-        {
-            DependencyObject? child = VisualTreeHelper.GetChild(parent, i);
+	        int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
 
-            if (child is FrameworkElement frameworkElement && frameworkElement.Name == childName)
-            {
-                return frameworkElement;
-            }
+	        for (int i = 0; i < childrenCount; i++)
+	        {
+	            DependencyObject? child = VisualTreeHelper.GetChild(parent, i);
 
-            child = FindChild(child, childName);
+	            if (child is FrameworkElement frameworkElement && frameworkElement.Name == childName)
+	            {
+	                return frameworkElement;
+	            }
 
-            if (child != null)
-            {
-                return child;
-            }
-        }
+	            child = FindChild(child, childName);
 
-        return null;
-    }
+	            if (child != null)
+	            {
+	                return child;
+	            }
+	        }
+
+	        return null;
+	    }
+	}
 }

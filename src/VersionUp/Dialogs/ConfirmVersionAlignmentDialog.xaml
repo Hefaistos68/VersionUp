@@ -1,0 +1,56 @@
+<platformUi:DialogWindow x:Class="VersionUp.Dialogs.ConfirmVersionAlignmentDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:platformUi="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
+        xmlns:shell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+        Title="Update Project Versions" 
+        Width="380" 
+        Height="180" 
+        MinHeight="180" 
+        MinWidth="380"
+        WindowStartupLocation="CenterOwner" 
+        ResizeMode="NoResize" 
+        ShowInTaskbar="False"
+        Background="{DynamicResource {x:Static shell:VsBrushes.WindowKey}}"
+        Foreground="{DynamicResource {x:Static shell:VsBrushes.WindowTextKey}}">
+    
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock x:Name="_messageTextBlock" 
+                   TextWrapping="Wrap" 
+                   FontSize="12" 
+                   Grid.Row="0"
+                   Margin="0,0,0,16"
+                   Foreground="{DynamicResource {x:Static shell:VsBrushes.WindowTextKey}}"/>
+        
+        <CheckBox x:Name="_dontAskCheckBox" 
+                  Content="_Don't ask again" 
+                  Margin="0,0,0,16" 
+                  FontSize="12" 
+                  Grid.Row="1"
+                  Foreground="{DynamicResource {x:Static shell:VsBrushes.WindowTextKey}}"/>
+        
+        <StackPanel Orientation="Horizontal" 
+                    HorizontalAlignment="Right" 
+                    Grid.Row="2">
+            <Button x:Name="btnYes" 
+                    Content="_Yes"
+                    IsDefault="True" 
+                    Width="75" 
+                    Height="23" 
+                    Margin="0,0,8,0"
+                    Click="YesButton_Click"/>
+            <Button x:Name="btnNo" 
+                    Content="No" 
+                    IsCancel="True" 
+                    Width="75" 
+                    Height="23"
+                    Click="NoButton_Click"/>
+        </StackPanel>
+    </Grid>
+</platformUi:DialogWindow>

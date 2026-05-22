@@ -1,52 +1,53 @@
-namespace VersionUp.Tests;
-
-using NUnit.Framework;
-using Shouldly;
-using VersionUp;
-
-/// <summary>
-/// Unit tests for the <see cref="PackageJsonVersionHandler"/> class.
-/// </summary>
-[TestFixture]
-public class PackageJsonVersionHandlerTests
+namespace VersionUp.Tests
 {
-    /// <summary>
-    /// Verifies that package.json files are targeted correctly.
-    /// </summary>
-    [Test]
-    public void CanHandle_ShouldReturnExpectedResults()
-    {
-        PackageJsonVersionHandler handler = new PackageJsonVersionHandler();
+	using NUnit.Framework;
+	using Shouldly;
+	using VersionUp.VersionHandlers;
 
-        handler.CanHandle("P:\\Source\\package.json").ShouldBeTrue();
-        handler.CanHandle("P:\\Source\\Package-lock.json").ShouldBeFalse();
-    }
+	/// <summary>
+	/// Unit tests for the <see cref="PackageJsonVersionHandler"/> class.
+	/// </summary>
+	[TestFixture]
+	public class PackageJsonVersionHandlerTests
+	{
+	    /// <summary>
+	    /// Verifies that package.json files are targeted correctly.
+	    /// </summary>
+	    [Test]
+	    public void CanHandle_ShouldReturnExpectedResults()
+	    {
+	        PackageJsonVersionHandler handler = new PackageJsonVersionHandler();
 
-    /// <summary>
-    /// Verifies that the version key is parsed.
-    /// </summary>
-    [Test]
-    public void GetVersion_ShouldParseVersionCorrectly()
-    {
-        PackageJsonVersionHandler handler = new PackageJsonVersionHandler();
-        string json = "{\n  \"name\": \"my-app\",\n  \"version\": \"1.0.0-beta\"\n}";
+	        handler.CanHandle("P:\\Source\\package.json").ShouldBeTrue();
+	        handler.CanHandle("P:\\Source\\Package-lock.json").ShouldBeFalse();
+	    }
 
-        string? result = handler.GetVersion(json);
+	    /// <summary>
+	    /// Verifies that the version key is parsed.
+	    /// </summary>
+	    [Test]
+	    public void GetVersion_ShouldParseVersionCorrectly()
+	    {
+	        PackageJsonVersionHandler handler = new PackageJsonVersionHandler();
+	        string json = "{\n  \"name\": \"my-app\",\n  \"version\": \"1.0.0-beta\"\n}";
 
-        result.ShouldBe("1.0.0-beta");
-    }
+	        string? result = handler.GetVersion(json);
 
-    /// <summary>
-    /// Verifies that the version is updated without destroying JSON layout.
-    /// </summary>
-    [Test]
-    public void UpdateVersion_ShouldUpdateVersionCorrectly()
-    {
-        PackageJsonVersionHandler handler = new PackageJsonVersionHandler();
-        string json = "{\n  \"name\": \"my-app\",\n  \"version\": \"1.0.0-beta\"\n}";
+	        result.ShouldBe("1.0.0-beta");
+	    }
 
-        string result = handler.UpdateVersion(json, "2.0.0");
+	    /// <summary>
+	    /// Verifies that the version is updated without destroying JSON layout.
+	    /// </summary>
+	    [Test]
+	    public void UpdateVersion_ShouldUpdateVersionCorrectly()
+	    {
+	        PackageJsonVersionHandler handler = new PackageJsonVersionHandler();
+	        string json = "{\n  \"name\": \"my-app\",\n  \"version\": \"1.0.0-beta\"\n}";
 
-        result.ShouldContain("\"version\": \"2.0.0\"");
-    }
+	        string result = handler.UpdateVersion(json, "2.0.0");
+
+	        result.ShouldContain("\"version\": \"2.0.0\"");
+	    }
+	}
 }

@@ -1,0 +1,58 @@
+<platformUi:DialogWindow x:Class="VersionUp.Dialogs.SetVersionDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:platformUi="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
+        xmlns:shell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+        Title="Set Version" 
+        Width="320" 
+        Height="160" 
+        MinHeight="160" 
+        MinWidth="320"
+        WindowStartupLocation="CenterOwner" 
+        ResizeMode="NoResize" 
+        ShowInTaskbar="False"
+        Background="{DynamicResource {x:Static shell:VsBrushes.WindowKey}}"
+        Foreground="{DynamicResource {x:Static shell:VsBrushes.WindowTextKey}}">
+    
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock x:Name="lblMessage" 
+                   Text="Enter or modify the version:" 
+                   FontSize="12" 
+                   Grid.Row="0"
+                   Foreground="{DynamicResource {x:Static shell:VsBrushes.WindowTextKey}}"/>
+        
+        <TextBox x:Name="_versionTextBox" 
+                 Margin="0,8,0,16" 
+                 Padding="4" 
+                 FontSize="12" 
+                 Grid.Row="1"
+                 VerticalAlignment="Center"
+                 Background="{DynamicResource {x:Static shell:VsBrushes.ComboBoxBackgroundKey}}"
+                 Foreground="{DynamicResource {x:Static shell:VsBrushes.WindowTextKey}}"
+                 BorderBrush="{DynamicResource {x:Static shell:VsBrushes.ComboBoxBorderKey}}"/>
+        
+        <StackPanel Orientation="Horizontal" 
+                    HorizontalAlignment="Right" 
+                    Grid.Row="2">
+            <Button x:Name="btnOk" 
+                    Content="OK" 
+                    IsDefault="True" 
+                    Width="75" 
+                    Height="23" 
+                    Margin="0,0,8,0"
+                    Click="OkButton_Click"/>
+            <Button x:Name="btnCancel" 
+                    Content="Cancel" 
+                    IsCancel="True" 
+                    Width="75" 
+                    Height="23"
+                    Click="CancelButton_Click"/>
+        </StackPanel>
+    </Grid>
+</platformUi:DialogWindow>

@@ -1,6 +1,6 @@
 # VersionUp
 
-**VersionUp** is a sleek, modern Visual Studio extension that allows developers to quickly and easily increment the version of C#/.NET projects directly from the Solution Explorer context menu.
+**VersionUp** is a sleek, modern Visual Studio and VScode extension that allows developers to quickly and easily increment the version of C#/.NET projects directly from the Solution Explorer context menu.
 
 [![VersionUp](documentation/images/status-bar-info.png)](documentation/images/status-bar-info.png)
 

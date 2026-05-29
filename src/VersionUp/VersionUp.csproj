@@ -8,7 +8,7 @@
     <!-- Assembly Metadata for GitHub & Marketplace -->
     <AssemblyName>VersionUp</AssemblyName>
     <RootNamespace>VersionUp</RootNamespace>
-    <Version>1.0.3</Version>
+    <Version>1.0.4</Version>
     <Authors>Hefaistos68</Authors>
     <Company>Hefaistos68</Company>
     <Product>VersionUp</Product>

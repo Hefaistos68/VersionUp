@@ -37,6 +37,9 @@ namespace VersionUp.UiElements
 	    private Popup? _popup;
 	    private bool _isDisposed;
 
+	    /// <summary>The collection of active version buttons in the popup.</summary>
+	    private readonly List<Button> _versionButtons = new();
+
 	    /// <summary>
 	    /// Initializes a new instance of the <see cref="VersionStatusBarControl"/> class.
 	    /// </summary>
@@ -259,6 +262,9 @@ namespace VersionUp.UiElements
 	            AllowsTransparency = true,
 	            PopupAnimation = PopupAnimation.Fade
 	        };
+
+	        _popup.Opened += OnPopupOpened;
+	        _popup.Closed += OnPopupClosed;
 	    }
 
     /// <summary>
@@ -322,10 +328,13 @@ namespace VersionUp.UiElements
         }
         else
         {
+            _versionButtons.Clear();
+
             Grid grid = new() { Margin = new Thickness(0, 2, 0, 2) };
 
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -425,6 +434,28 @@ namespace VersionUp.UiElements
         {
             AddVersionInitializationButton(grid, rowIndex, proj);
         }
+        else
+        {
+            StackPanel buttonsPanel = CreateVersionButtons(diagnostics.PrimaryVersion!, (segment, decrease) =>
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                string newVersion = ModifyVersionSegment(diagnostics.PrimaryVersion!, segment, decrease);
+
+                VersionUpCommand.AlignProjectVersions(proj, newVersion);
+
+                if (_popup != null)
+                {
+                    _popup.IsOpen = false;
+                }
+
+                UpdateState();
+            });
+
+            Grid.SetRow(buttonsPanel, rowIndex);
+            Grid.SetColumn(buttonsPanel, 4);
+            grid.Children.Add(buttonsPanel);
+        }
 
         if (diagnostics.IsOutOfSync)
         {
@@ -500,7 +531,7 @@ namespace VersionUp.UiElements
         };
 
         Grid.SetRow(addVersionButton, rowIndex);
-        Grid.SetColumn(addVersionButton, 4);
+        Grid.SetColumn(addVersionButton, 5);
         grid.Children.Add(addVersionButton);
     }
 
@@ -575,10 +606,30 @@ namespace VersionUp.UiElements
             Grid.SetColumn(detailVersionBlock, 3);
 
             Grid.SetRow(useButton, rowIndex);
-            Grid.SetColumn(useButton, 4);
+            Grid.SetColumn(useButton, 5);
+
+            StackPanel fileButtonsPanel = CreateVersionButtons(verDetail.Version, (segment, decrease) =>
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                string newVersion = ModifyVersionSegment(verDetail.Version, segment, decrease);
+
+                VersionUpCommand.AlignFileVersion(verDetail.FilePath, newVersion);
+
+                if (_popup != null)
+                {
+                    _popup.IsOpen = false;
+                }
+
+                UpdateState();
+            });
+
+            Grid.SetRow(fileButtonsPanel, rowIndex);
+            Grid.SetColumn(fileButtonsPanel, 4);
 
             grid.Children.Add(fileBlock);
             grid.Children.Add(detailVersionBlock);
+            grid.Children.Add(fileButtonsPanel);
             grid.Children.Add(useButton);
 
             rowIndex++;
@@ -741,6 +792,241 @@ namespace VersionUp.UiElements
 	    {
 	        ThreadHelper.ThrowIfNotOnUIThread();
 	        UpdateState();
+	    }
+
+	    /// <summary>
+	    /// Modifies a specific segment of the version string (either increment or decrement).
+	    /// </summary>
+	    /// <param name="currentVersion">The current version string.</param>
+	    /// <param name="segment">The version segment to modify.</param>
+	    /// <param name="decrease">True to decrement, false to increment.</param>
+	    /// <returns>The modified version string.</returns>
+	    private static string ModifyVersionSegment(string currentVersion, VersionSegment segment, bool decrease)
+	    {
+	        if (string.IsNullOrWhiteSpace(currentVersion))
+	        {
+	            return "1.0.0";
+	        }
+
+	        if (!Version.TryParse(currentVersion, out Version parsedVersion))
+	        {
+	            return "1.0.0";
+	        }
+
+	        int major = parsedVersion.Major;
+	        int minor = parsedVersion.Minor;
+	        int build = parsedVersion.Build < 0 ? 0 : parsedVersion.Build;
+	        int revision = parsedVersion.Revision < 0 ? 0 : parsedVersion.Revision;
+
+	        if (decrease)
+	        {
+	            switch (segment)
+	            {
+	                case VersionSegment.Major:
+	                    major = Math.Max(0, major - 1);
+	                    break;
+
+	                case VersionSegment.Minor:
+	                    minor = Math.Max(0, minor - 1);
+	                    break;
+
+	                case VersionSegment.Build:
+	                    build = Math.Max(0, build - 1);
+	                    break;
+
+	                case VersionSegment.Revision:
+	                    revision = Math.Max(0, revision - 1);
+	                    break;
+	            }
+	        }
+	        else
+	        {
+	            switch (segment)
+	            {
+	                case VersionSegment.Major:
+	                    major++;
+	                    minor = 0;
+	                    build = 0;
+	                    revision = 0;
+	                    break;
+
+	                case VersionSegment.Minor:
+	                    minor++;
+	                    build = 0;
+	                    revision = 0;
+	                    break;
+
+	                case VersionSegment.Build:
+	                    build++;
+	                    revision = 0;
+	                    break;
+
+	                case VersionSegment.Revision:
+	                    revision++;
+	                    break;
+	            }
+	        }
+
+	        if (parsedVersion.Revision >= 0)
+	        {
+	            return $"{major}.{minor}.{build}.{revision}";
+	        }
+
+	        if (parsedVersion.Build >= 0)
+	        {
+	            return $"{major}.{minor}.{build}";
+	        }
+
+	        return $"{major}.{minor}";
+	    }
+
+	    /// <summary>
+	    /// Creates a StackPanel containing the Major, Minor, and Build increment/decrement buttons.
+	    /// </summary>
+	    /// <param name="currentVersion">The current version string.</param>
+	    /// <param name="onSegmentClicked">The callback invoked when a version segment button is clicked.</param>
+	    /// <returns>A StackPanel containing the three buttons.</returns>
+	    private StackPanel CreateVersionButtons(string currentVersion, Action<VersionSegment, bool> onSegmentClicked)
+	    {
+	        StackPanel stack = new()
+	        {
+	            Orientation = Orientation.Horizontal,
+	            Margin      = new Thickness(8, 0, 0, 0)
+	        };
+
+	        bool isShift = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+	        string sign = isShift ? "-" : "+";
+
+	        Button btnMajor = CreateSingleVersionButton(sign, "Major version");
+	        Button btnMinor = CreateSingleVersionButton(sign, "Minor version");
+	        Button btnBuild = CreateSingleVersionButton(sign, "Build version");
+
+	        btnMajor.Click += (s, e) => onSegmentClicked(VersionSegment.Major, Keyboard.Modifiers.HasFlag(ModifierKeys.Shift));
+	        btnMinor.Click += (s, e) => onSegmentClicked(VersionSegment.Minor, Keyboard.Modifiers.HasFlag(ModifierKeys.Shift));
+	        btnBuild.Click += (s, e) => onSegmentClicked(VersionSegment.Build, Keyboard.Modifiers.HasFlag(ModifierKeys.Shift));
+
+	        stack.Children.Add(btnMajor);
+	        stack.Children.Add(btnMinor);
+	        stack.Children.Add(btnBuild);
+
+	        _versionButtons.Add(btnMajor);
+	        _versionButtons.Add(btnMinor);
+	        _versionButtons.Add(btnBuild);
+
+	        return stack;
+	    }
+
+	    /// <summary>
+	    /// Creates a single increment/decrement button with the specified content and tooltip.
+	    /// </summary>
+	    /// <param name="content">The button label content.</param>
+	    /// <param name="segmentName">The name of the version segment.</param>
+	    /// <returns>A configured Button control.</returns>
+	    private Button CreateSingleVersionButton(string content, string segmentName)
+	    {
+	        Button btn = new()
+	        {
+	            Content                    = content,
+	            Margin                     = new Thickness(2, 1, 2, 1),
+	            Padding                    = new Thickness(0),
+	            Cursor                     = Cursors.Hand,
+	            Width                      = 18,
+	            Height                     = 18,
+	            FontSize                   = 10,
+	            FontWeight                 = FontWeights.Bold,
+	            VerticalAlignment          = VerticalAlignment.Center,
+	            VerticalContentAlignment    = VerticalAlignment.Center,
+	            HorizontalContentAlignment  = HorizontalAlignment.Center,
+	            ToolTip                    = $"{content} {segmentName}"
+	        };
+
+	        btn.SetResourceReference(Button.BackgroundProperty, VsBrushes.ToolWindowBackgroundKey);
+	        btn.SetResourceReference(Button.ForegroundProperty, VsBrushes.ToolWindowTextKey);
+	        btn.SetResourceReference(Button.BorderBrushProperty, VsBrushes.ToolWindowBorderKey);
+
+	        return btn;
+	    }
+
+	    /// <summary>
+	    /// Updates all version button labels (+ or -) depending on whether the Shift key is pressed.
+	    /// </summary>
+	    private void UpdateButtonLabels()
+	    {
+	        bool isShift = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+	        string content = isShift ? "-" : "+";
+
+	        foreach (Button btn in _versionButtons)
+	        {
+	            btn.Content = content;
+
+	            if (btn.ToolTip is string tooltipText)
+	            {
+	                if (tooltipText.StartsWith("+") || tooltipText.StartsWith("-"))
+	                {
+	                    btn.ToolTip = $"{content}{tooltipText.Substring(1)}";
+	                }
+	            }
+	        }
+	    }
+
+	    /// <summary>
+	    /// Handles the Opened event of the popup, subscribing to parent window key events.
+	    /// </summary>
+	    /// <param name="sender">The source of the event.</param>
+	    /// <param name="e">The event data.</param>
+	    private void OnPopupOpened(object sender, EventArgs e)
+	    {
+	        System.Windows.Window parentWindow = System.Windows.Window.GetWindow(this) ?? Application.Current.MainWindow;
+
+	        if (parentWindow != null)
+	        {
+	            parentWindow.PreviewKeyDown += OnWindowPreviewKeyDown;
+	            parentWindow.PreviewKeyUp += OnWindowPreviewKeyUp;
+	        }
+
+	        UpdateButtonLabels();
+	    }
+
+	    /// <summary>
+	    /// Handles the Closed event of the popup, unsubscribing from parent window key events.
+	    /// </summary>
+	    /// <param name="sender">The source of the event.</param>
+	    /// <param name="e">The event data.</param>
+	    private void OnPopupClosed(object sender, EventArgs e)
+	    {
+	        System.Windows.Window parentWindow = System.Windows.Window.GetWindow(this) ?? Application.Current.MainWindow;
+
+	        if (parentWindow != null)
+	        {
+	            parentWindow.PreviewKeyDown -= OnWindowPreviewKeyDown;
+	            parentWindow.PreviewKeyUp -= OnWindowPreviewKeyUp;
+	        }
+	    }
+
+	    /// <summary>
+	    /// Handles the PreviewKeyDown event of the parent window to detect Shift key press.
+	    /// </summary>
+	    /// <param name="sender">The source of the event.</param>
+	    /// <param name="e">The event data.</param>
+	    private void OnWindowPreviewKeyDown(object sender, KeyEventArgs e)
+	    {
+	        if (e.Key == Key.LeftShift || e.Key == Key.RightShift || e.Key == Key.System)
+	        {
+	            UpdateButtonLabels();
+	        }
+	    }
+
+	    /// <summary>
+	    /// Handles the PreviewKeyUp event of the parent window to detect Shift key release.
+	    /// </summary>
+	    /// <param name="sender">The source of the event.</param>
+	    /// <param name="e">The event data.</param>
+	    private void OnWindowPreviewKeyUp(object sender, KeyEventArgs e)
+	    {
+	        if (e.Key == Key.LeftShift || e.Key == Key.RightShift || e.Key == Key.System)
+	        {
+	            UpdateButtonLabels();
+	        }
 	    }
 	}
 }

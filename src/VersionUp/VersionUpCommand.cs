@@ -636,7 +636,7 @@ namespace VersionUp
 	    /// </summary>
 	    /// <param name="filePath">The absolute path to the versioned file.</param>
 	    /// <param name="targetVersion">The target version.</param>
-	    private static void AlignFileVersion(string filePath, string targetVersion)
+	    internal static void AlignFileVersion(string filePath, string targetVersion)
 	    {
 	        ThreadHelper.ThrowIfNotOnUIThread();
 

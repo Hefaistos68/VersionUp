@@ -1,0 +1,111 @@
+{
+  "name": "versionup",
+  "displayName": "VersionUp",
+  "description": "Sleek, modern extension to increment the version of C#/.NET and other projects directly from the explorer pane.",
+  "icon": "Resources/VersionUpIcon.png",
+  "version": "1.0.1",
+  "publisher": "Hefaistos68",
+  "author": {
+    "name": "Hefaistos68",
+    "email": "dev@hefaistos68.dev",
+    "url": "https://github.com/Hefaistos68"
+  },
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Hefaistos68/VersionUp"
+  },
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "submenus": [
+      {
+        "id": "versionup.submenu",
+        "label": "VersionUp"
+      }
+    ],
+    "commands": [
+      {
+        "command": "versionup.incrementMajor",
+        "category": "VersionUp",
+        "title": "Increment Major"
+      },
+      {
+        "command": "versionup.incrementMinor",
+        "category": "VersionUp",
+        "title": "Increment Minor"
+      },
+      {
+        "command": "versionup.incrementBuild",
+        "category": "VersionUp",
+        "title": "Increment Build"
+      },
+      {
+        "command": "versionup.incrementRevision",
+        "category": "VersionUp",
+        "title": "Increment Revision"
+      },
+      {
+        "command": "versionup.setVersion",
+        "category": "VersionUp",
+        "title": "Set Version..."
+      },
+      {
+        "command": "versionup.showProjectVersions",
+        "category": "VersionUp",
+        "title": "Show Project Versions / Align"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "submenu": "versionup.submenu",
+          "group": "navigation",
+          "when": "resourceExtname == '.csproj' || resourceExtname == '.fsproj' || resourceExtname == '.vbproj' || resourceFilename == 'Directory.Build.props' || resourceFilename == 'directory.build.props' || resourceFilename == 'Directory.Build.targets' || resourceFilename == 'directory.build.targets' || resourceFilename == 'AssemblyInfo.cs' || resourceFilename == 'assemblyinfo.cs' || resourceFilename == 'AssemblyInfo.fs' || resourceFilename == 'assemblyinfo.fs' || resourceFilename == 'AssemblyInfo.vb' || resourceFilename == 'assemblyinfo.vb' || resourceExtname == '.nuspec' || resourceFilename == 'package.appxmanifest' || resourceFilename == 'package.json' || resourceExtname == '.rc' || resourceFilename == 'source.extension.vsixmanifest' || resourceFilename == 'Source.Extension.vsixmanifest' || resourceExtname == '.wxs'"
+        }
+      ],
+      "versionup.submenu": [
+        {
+          "command": "versionup.incrementMajor",
+          "group": "1_increment@1"
+        },
+        {
+          "command": "versionup.incrementMinor",
+          "group": "1_increment@2"
+        },
+        {
+          "command": "versionup.incrementBuild",
+          "group": "1_increment@3"
+        },
+        {
+          "command": "versionup.incrementRevision",
+          "group": "1_increment@4"
+        },
+        {
+          "command": "versionup.setVersion",
+          "group": "2_set@1"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "npx @vscode/vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^16.18.34",
+    "@types/vscode": "^1.75.0",
+    "typescript": "^4.9.5"
+  }
+}
